@@ -2,6 +2,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const db = require('../db/init');
+const { requireAuth } = require('../middleware/auth');
 
 const router = express.Router();
 const OTP_DEV_MODE = process.env.OTP_DEV_MODE === 'true';
@@ -59,8 +60,16 @@ router.post('/otp/verify', (req, res) => {
     user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(result.lastInsertRowid);
   }
 
-  const token = issueToken({ id: user.id, role: user.role, phone: user.phone, guest: false });
+  const token = issueToken({ id: user.id, role: user.role, phone: user.phone, state: user.state, district: user.district, guest: false });
   res.json({ token, user });
+});
+
+// ---------- 1b. Rehydrate the current session (used on page refresh) ----------
+router.get('/me', requireAuth, (req, res) => {
+  if (req.user.guest) return res.json({ guest: true });
+  const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+  res.json({ user });
 });
 
 // ---------- 2. Guest mode ----------
@@ -77,19 +86,26 @@ router.post('/demo-login', (req, res) => {
   const { role } = req.body;
   const user = db.prepare(`SELECT * FROM users WHERE role = ?`).get(role);
   if (!user) return res.status(404).json({ error: 'No demo account for that role — run npm run seed' });
-  const token = issueToken({ id: user.id, role: user.role, phone: user.phone, guest: false });
+  const token = issueToken({ id: user.id, role: user.role, phone: user.phone, state: user.state, district: user.district, guest: false });
   res.json({ token, user });
 });
 
-// ---------- 4. Google login ----------
-// Real Google OAuth needs a Client ID from Google Cloud Console (frontend)
-// plus verifying the id_token here (backend). Wired as a clear stub until
-// those credentials exist — see README "Enabling Google login".
+// ---------- 4. Google login (simulated, same convention as OTP/Aadhaar) ----------
+// Real Google OAuth needs a Client ID from Google Cloud Console + verifying
+// the id_token server-side. That's out of scope for a hackathon demo (needs
+// a real Google Cloud account), so this issues a session for a demo Google
+// account instead — clearly labeled, same pattern as OTP_DEV_MODE.
 router.post('/google', (req, res) => {
-  if (!process.env.GOOGLE_CLIENT_ID) {
-    return res.status(501).json({ error: 'Google login not configured yet — see README' });
+  const demoEmail = 'demo.google.user@bhumi.app';
+  let user = db.prepare(`SELECT * FROM users WHERE email = ?`).get(demoEmail);
+  if (!user) {
+    const info = db
+      .prepare(`INSERT INTO users (name, email, phone, role, aadhaar_verified) VALUES (?, ?, ?, 'farmer', 0)`)
+      .run('Demo Google User', demoEmail, '9999999999');
+    user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(info.lastInsertRowid);
   }
-  res.status(501).json({ error: 'TODO: verify Google id_token and issue a session' });
+  const token = issueToken({ id: user.id, role: user.role, state: user.state, district: user.district, guest: false });
+  res.json({ token, user, simulated: true });
 });
 
 // ---------- 5. Aadhaar-linked verification (used inside the app, not at login) ----------

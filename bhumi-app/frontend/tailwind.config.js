@@ -11,6 +11,7 @@ export default {
         clay: { DEFAULT: '#B97A4E', dark: '#8F5B37' },
         stone: '#DAD3C1',
         ink: { DEFAULT: '#2B2820', soft: '#645D4C' },
+        brand: { 50: '#EEF1E7', 100: '#DCE3D0', 500: '#6B7F52', 600: '#3B4630', 700: '#2B331F' },
       },
       fontFamily: {
         display: ['Fraunces', 'serif'],

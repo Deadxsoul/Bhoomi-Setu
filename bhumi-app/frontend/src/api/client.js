@@ -8,4 +8,15 @@ client.interceptors.request.use((config) => {
   return config;
 });
 
+client.interceptors.response.use(
+  (res) => res,
+  (err) => {
+    if (err.response?.status === 401) {
+      localStorage.removeItem('bhumi_token');
+      window.location.href = '/login';
+    }
+    return Promise.reject(err);
+  }
+);
+
 export default client;

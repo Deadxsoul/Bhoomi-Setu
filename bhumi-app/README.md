@@ -72,25 +72,29 @@ why that happens and both fixes.
 | District / State / Central / Agency officers | Mobile number + OTP (seeded demo accounts) |
 
 ## Feature Checklist
-- [ ] Mobile + OTP login, Aadhaar-style verification before land registration
-- [ ] Guest mode
-- [ ] Hindi/English toggle
-- [ ] Role-based dashboards
-- [ ] Proposal submission & approval workflow
-- [ ] GIS map + 3D parcel visualization
-- [ ] Explainable compensation calculator
-- [ ] Possession status tracker
-- [ ] Rehabilitation & resettlement + priority scoring
-- [ ] Document management + duplicate checker
-- [ ] Litigation risk indicator
-- [ ] Satellite-based encroachment checker
-- [ ] Farmer chatbot (guest-accessible)
-- [ ] Gamified state ranking
-- [ ] Unused acquired land finder
-- [ ] Voice-based data entry
-- [ ] MIS reports (PDF/Excel)
-- [ ] Notifications & alerts
+- [x] Mobile + OTP login (working end-to-end: send → verify → session persists on refresh)
+- [x] Guest mode
+- [x] Hindi/English language switch (react-i18next — nav bar + login; feature pages still English text)
+- [x] Role-based dashboards (`/app/dashboard`, KPI cards + charts, real seeded data)
+- [x] Proposal submission & approval workflow (`/app/projects`)
+- [x] GIS map + litigation risk markers (`/app/map`) — 3D parcel block visualization not built
+- [x] Explainable compensation calculator (`/app/compensation`)
+- [x] Possession status tracker (`/app/possession`)
+- [x] Rehabilitation & resettlement + priority scoring (`/app/rehabilitation`)
+- [x] Document management + duplicate checker (`/app/documents`)
+- [x] Litigation risk indicator (color-coded markers on the GIS map)
+- [x] Satellite-based encroachment checker (`/app/satellite`, pixel-diff demo)
+- [x] Farmer chatbot (`/app/chatbot`, public API — reachable in guest mode too)
+- [x] Gamified state ranking (`/app/ranking`)
+- [x] Unused acquired land finder (click a parcel marker on the map)
+- [x] Voice-based data entry (mic button on the Rehabilitation form, Web Speech API)
+- [x] MIS reports — PDF/Excel (`/app/reports`)
+- [x] Notifications & alerts (backend route + table; no bell/UI icon wired in yet)
+- [ ] Aadhaar-style verification UI (backend routes exist, no frontend screen yet)
+- [ ] Scroll landing page (Layers 1–3) — `/` still goes straight to `/login`
+- [ ] 3D parcel block visualization (`ParcelBlock` component)
 
 ## Status
-Planning stage — this README, `PRD.md`, and `TRD.md` are the spec to be reviewed
-before implementation starts.
+Core app is feature-complete and tested end-to-end against the PRD's "Must" and
+"Should" list, connected to the mobile+OTP login. Still open: the scroll landing
+page, the 3D parcel view, and full page-level translation.

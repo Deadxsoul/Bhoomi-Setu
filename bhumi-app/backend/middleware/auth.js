@@ -21,4 +21,11 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { requireAuth, requireRole };
+module.exports = {
+  requireAuth,
+  requireRole,
+  // Aliases (same functions) so routes ported from the feature-complete
+  // reference build can be used without renaming every import.
+  authenticate: requireAuth,
+  authorize: requireRole,
+};
