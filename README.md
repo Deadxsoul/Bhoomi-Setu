@@ -96,3 +96,8 @@ why that happens and both fixes.
 ## Status
 Planning stage — this README, `PRD.md`, and `TRD.md` are the spec to be reviewed
 before implementation starts.
+
+##commands :
+cd /workspaces/Bhoomi-Setu/bhumi-app
+npm install
+npm run dev
