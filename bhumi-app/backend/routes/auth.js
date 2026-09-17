@@ -72,6 +72,44 @@ router.get('/me', requireAuth, (req, res) => {
   res.json({ user });
 });
 
+// ---------- 1c. Edit profile (name / contact details / language) ----------
+router.patch('/me', requireAuth, (req, res) => {
+  if (req.user.guest) return res.status(403).json({ error: 'Guests have nothing to edit — sign in to save a profile' });
+  const { name, email, village, district, state, language } = req.body;
+
+  const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(req.user.id);
+  if (!user) return res.status(404).json({ error: 'User not found' });
+
+  if (name !== undefined && !String(name).trim()) {
+    return res.status(400).json({ error: 'Name cannot be empty' });
+  }
+  if (language !== undefined && !['en', 'hi'].includes(language)) {
+    return res.status(400).json({ error: "Language must be 'en' or 'hi'" });
+  }
+
+  db.prepare(`
+    UPDATE users SET
+      name = COALESCE(?, name),
+      email = COALESCE(?, email),
+      village = COALESCE(?, village),
+      district = COALESCE(?, district),
+      state = COALESCE(?, state),
+      language = COALESCE(?, language)
+    WHERE id = ?
+  `).run(
+    name !== undefined ? String(name).trim() : null,
+    email !== undefined ? (email || null) : null,
+    village !== undefined ? (village || null) : null,
+    district !== undefined ? (district || null) : null,
+    state !== undefined ? (state || null) : null,
+    language !== undefined ? language : null,
+    req.user.id
+  );
+
+  const updated = db.prepare(`SELECT * FROM users WHERE id = ?`).get(req.user.id);
+  res.json({ user: updated });
+});
+
 // ---------- 2. Guest mode ----------
 router.post('/guest', (req, res) => {
   const token = issueToken({ guest: true, role: 'guest' });
@@ -108,17 +146,43 @@ router.post('/google', (req, res) => {
   res.json({ token, user, simulated: true });
 });
 
-// ---------- 5. Aadhaar-linked verification (used inside the app, not at login) ----------
-// Step 1: user submits their Aadhaar number to start land registration
+// ---------- 5. Land registration (used inside the app, not at login) ----------
+// Step 1: user fills the full registration form; we save it and send an
+// OTP to the phone on file to confirm it's really them before it counts.
 router.post('/aadhaar/send', (req, res) => {
-  const { userId, aadhaarNumber } = req.body;
+  const {
+    userId, aadhaarNumber, fullName, dateOfBirth, landId,
+    fatherName, village, district, state, surveyNumber, landAreaAcres,
+  } = req.body;
+
   const user = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
   if (!user) return res.status(404).json({ error: 'User not found' });
+
   if (!/^\d{12}$/.test(aadhaarNumber || '')) {
     return res.status(400).json({ error: 'Enter a valid 12-digit Aadhaar number' });
   }
+  if (!fullName || !fullName.trim()) {
+    return res.status(400).json({ error: 'Enter the name as it appears on the Aadhaar card' });
+  }
+  if (!dateOfBirth || !/^\d{4}-\d{2}-\d{2}$/.test(dateOfBirth)) {
+    return res.status(400).json({ error: 'Enter a valid date of birth' });
+  }
+  if (!landId || !landId.trim()) {
+    return res.status(400).json({ error: 'Enter the land / parcel ID' });
+  }
 
-  db.prepare(`UPDATE users SET aadhaar_number = ? WHERE id = ?`).run(aadhaarNumber, userId);
+  db.prepare(`
+    UPDATE users SET
+      aadhaar_number = ?, name = ?, date_of_birth = ?, land_id = ?,
+      father_name = ?, village = ?, district = COALESCE(?, district),
+      state = COALESCE(?, state), survey_number = ?, land_area_acres = ?
+    WHERE id = ?
+  `).run(
+    aadhaarNumber, fullName.trim(), dateOfBirth, landId.trim(),
+    fatherName || null, village || null, district || null,
+    state || null, surveyNumber || null, landAreaAcres || null,
+    userId
+  );
 
   const code = genOtp();
   const expiresAt = new Date(Date.now() + 5 * 60 * 1000).toISOString();
@@ -147,7 +211,8 @@ router.post('/aadhaar/verify', (req, res) => {
   db.prepare(`UPDATE otp_codes SET used = 1 WHERE id = ?`).run(row.id);
   db.prepare(`UPDATE users SET aadhaar_verified = 1 WHERE id = ?`).run(userId);
 
-  res.json({ verified: true });
+  const updatedUser = db.prepare(`SELECT * FROM users WHERE id = ?`).get(userId);
+  res.json({ verified: true, user: updatedUser });
 });
 
 module.exports = router;

@@ -14,6 +14,8 @@ const chatbotRoutes = require('./routes/chatbot');
 const dashboardRoutes = require('./routes/dashboard');
 const reportRoutes = require('./routes/reports');
 const notificationRoutes = require('./routes/notifications');
+const landTransactionRoutes = require('./routes/landTransactions');
+const landHistoryRoutes = require('./routes/landHistory');
 
 const app = express();
 app.use(cors());
@@ -33,6 +35,8 @@ app.use('/api/chatbot', chatbotRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/land-transactions', landTransactionRoutes);
+app.use('/api/land-history', landHistoryRoutes);
 
 app.use((err, req, res, next) => {
   console.error(err);

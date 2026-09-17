@@ -20,6 +20,13 @@ const Satellite = lazy(() => import('./pages/Satellite.jsx'));
 const StateRanking = lazy(() => import('./pages/StateRanking.jsx'));
 const Chatbot = lazy(() => import('./pages/Chatbot.jsx'));
 const Reports = lazy(() => import('./pages/Reports.jsx'));
+const Profile = lazy(() => import('./pages/Profile.jsx'));
+const LandTransactions = lazy(() => import('./pages/LandTransactions.jsx'));
+const LandTransactionForm = lazy(() => import('./pages/LandTransactionForm.jsx'));
+const LandTransactionDetail = lazy(() => import('./pages/LandTransactionDetail.jsx'));
+const LandTransactionQueue = lazy(() => import('./pages/LandTransactionQueue.jsx'));
+const Schemes = lazy(() => import('./pages/Schemes.jsx'));
+const LandHistory = lazy(() => import('./pages/LandHistory.jsx'));
 
 function PageFallback() {
   return <div className="p-10 text-center text-ink-soft text-sm">Loading…</div>;
@@ -59,6 +66,14 @@ export default function App() {
         <Route path="ranking" element={<StateRanking />} />
         <Route path="chatbot" element={<Chatbot />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="profile" element={<Profile />} />
+        <Route path="land-transactions" element={<LandTransactions />} />
+        <Route path="land-transactions/queue" element={<LandTransactionQueue />} />
+        <Route path="land-transactions/new/:role" element={<LandTransactionForm />} />
+        <Route path="land-transactions/:id" element={<LandTransactionDetail />} />
+        <Route path="land-transactions/history" element={<LandHistory />} />
+        <Route path="land-transactions/history/:landId" element={<LandHistory />} />
+        <Route path="schemes" element={<Schemes />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/login" replace />} />

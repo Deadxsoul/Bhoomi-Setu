@@ -2,6 +2,7 @@
 const express = require('express');
 const db = require('../db/init');
 const { authenticate, authorize } = require('../middleware/auth');
+const { logEvent } = require('../db/history');
 
 const router = express.Router();
 
@@ -30,6 +31,19 @@ router.patch('/:parcelId', authenticate, authorize('district', 'agency', 'centra
 
   if (handed_over) {
     db.prepare(`UPDATE land_parcels SET status = 'possessed' WHERE id = ?`).run(req.params.parcelId);
+
+    const parcel = db.prepare('SELECT parcel_code FROM land_parcels WHERE id = ?').get(req.params.parcelId);
+    if (parcel) {
+      logEvent({
+        land_id: parcel.parcel_code,
+        category: 'government',
+        event_type: 'possession_handover',
+        title: 'Possession handed over to the government',
+        event_date: handover_date || null,
+        related_parcel_id: req.params.parcelId,
+        created_by: req.user.id,
+      });
+    }
   }
 
   res.json({ parcel_id: req.params.parcelId, handed_over: !!handed_over });

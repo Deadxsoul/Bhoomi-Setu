@@ -10,6 +10,9 @@ const BANNERS = {
   ranking: 'https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?fm=jpg&q=70&w=1600&auto=format&fit=crop',
   chatbot: 'https://images.unsplash.com/photo-1625246333195-78d9c38ad449?fm=jpg&q=70&w=1600&auto=format&fit=crop',
   reports: 'https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?fm=jpg&q=70&w=1600&auto=format&fit=crop',
+  landTransactions: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?fm=jpg&q=70&w=1600&auto=format&fit=crop',
+  landHistory: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?fm=jpg&q=70&w=1600&auto=format&fit=crop',
+  profile: 'https://images.unsplash.com/photo-1508672019048-805c876b67e2?fm=jpg&q=70&w=1600&auto=format&fit=crop',
 };
 
 export default function FeatureLayer({ id, title, subtitle, children }) {

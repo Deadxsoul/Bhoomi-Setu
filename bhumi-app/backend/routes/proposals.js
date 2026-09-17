@@ -3,8 +3,18 @@
 const express = require('express');
 const db = require('../db/init');
 const { authenticate, authorize } = require('../middleware/auth');
+const { logEvent } = require('../db/history');
 
 const router = express.Router();
+
+const STAGE_LABELS = {
+  submitted: 'Proposal submitted',
+  district_review: 'Under district review',
+  state_review: 'Under state review',
+  central_review: 'Under central ministry review',
+  approved: 'Proposal approved',
+  rejected: 'Proposal rejected',
+};
 
 // GET /api/projects  - list projects (scoped by role)
 router.get('/projects', authenticate, (req, res) => {
@@ -73,6 +83,23 @@ router.patch('/proposals/:id/advance', authenticate, authorize('district', 'stat
   // Notify the original submitter
   db.prepare(`INSERT INTO notifications (user_id, message, channel) VALUES (?, ?, 'app')`)
     .run(proposal.submitted_by, `Proposal #${proposal.id} moved to stage: ${nextStage}`);
+
+  // Log a dated history event for every parcel under this project — a
+  // proposal stage change is a government-acquisition milestone for each
+  // piece of land it covers.
+  const affectedParcels = db.prepare('SELECT id, parcel_code FROM land_parcels WHERE project_id = ?').all(proposal.project_id);
+  for (const p of affectedParcels) {
+    logEvent({
+      land_id: p.parcel_code,
+      category: 'government',
+      event_type: 'proposal_stage',
+      title: STAGE_LABELS[nextStage] || `Proposal stage: ${nextStage}`,
+      description: remarks || proposal.remarks || null,
+      status: nextStage === 'rejected' ? 'rejected' : 'done',
+      related_parcel_id: p.id,
+      created_by: req.user.id,
+    });
+  }
 
   res.json({ id: req.params.id, stage: nextStage });
 });

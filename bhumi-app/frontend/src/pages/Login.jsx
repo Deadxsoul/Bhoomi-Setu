@@ -6,7 +6,7 @@ import { useAuth } from '../context/AuthContext.jsx';
 
 const FIELD_PHOTO = 'https://images.unsplash.com/photo-1720156457517-c5ae8b9915f0?fm=jpg&q=70&w=2000&auto=format&fit=crop';
 
-const ROLES = ['central', 'state', 'district', 'agency', 'farmer'];
+const ROLES = ['central', 'state', 'district', 'agency', 'farmer', 'police'];
 
 export default function Login() {
   const navigate = useNavigate();

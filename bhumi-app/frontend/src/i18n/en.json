@@ -26,7 +26,14 @@
     "state": "State Officer",
     "district": "District Officer",
     "agency": "Project Agency",
-    "farmer": "Farmer"
+    "farmer": "Farmer",
+    "police": "Police (Land Verification)"
+  },
+  "menu": {
+    "profile": "Profile",
+    "buySellLand": "Buy / Sell Land",
+    "verificationQueue": "Verification Queue",
+    "logout": "Log out"
   },
   "errors": {
     "invalidPhone": "Enter a valid 10-digit mobile number",
@@ -61,7 +68,7 @@
   "home": {
     "greeting": "Welcome back",
     "heroTitle": "Your land, tracked end to end.",
-    "heroSubtitle": "Scroll to see how Bhūmi follows a parcel from notice to possession — then jump in.",
+    "heroSubtitle": "Bhoomi Ki Awaaz, Setu Ki Raah.",
     "aadhaarCardTitle": "Register your land with Aadhaar",
     "aadhaarCardDesc": "Verify your identity to register a parcel and start tracking its proposal, compensation, and possession status.",
     "aadhaarCardCta": "Register with Aadhaar",

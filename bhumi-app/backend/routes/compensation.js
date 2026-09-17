@@ -3,6 +3,7 @@
 const express = require('express');
 const db = require('../db/init');
 const { authenticate, authorize } = require('../middleware/auth');
+const { logEvent } = require('../db/history');
 
 const router = express.Router();
 
@@ -80,6 +81,18 @@ router.post('/parcel/:parcelId', authenticate, authorize('district', 'agency', '
     db.prepare(`INSERT INTO compensation (parcel_id, amount_assessed, amount_paid, breakdown_json, status) VALUES (?, ?, 0, ?, 'pending')`)
       .run(req.params.parcelId, breakdown.total, JSON.stringify(breakdown));
   }
+
+  logEvent({
+    land_id: parcel.parcel_code,
+    category: 'government',
+    event_type: 'compensation_assessed',
+    title: 'Compensation assessed',
+    description: `Assessed amount: ₹${breakdown.total.toLocaleString('en-IN')}`,
+    amount: breakdown.total,
+    related_parcel_id: parcel.id,
+    created_by: req.user.id,
+  });
+
   res.json(breakdown);
 });
 
@@ -97,6 +110,20 @@ router.patch('/:id/pay', authenticate, authorize('district', 'agency', 'state'),
 
   if (status === 'paid') {
     db.prepare(`UPDATE land_parcels SET status = 'compensated' WHERE id = ?`).run(comp.parcel_id);
+  }
+
+  const parcel = db.prepare('SELECT parcel_code FROM land_parcels WHERE id = ?').get(comp.parcel_id);
+  if (parcel) {
+    logEvent({
+      land_id: parcel.parcel_code,
+      category: 'government',
+      event_type: status === 'paid' ? 'compensation_paid' : 'compensation_partial_payment',
+      title: status === 'paid' ? 'Compensation paid in full' : 'Partial compensation payment received',
+      description: `₹${Number(amount || 0).toLocaleString('en-IN')} paid (total paid so far: ₹${newPaid.toLocaleString('en-IN')})`,
+      amount: Number(amount || 0),
+      related_parcel_id: comp.parcel_id,
+      created_by: req.user.id,
+    });
   }
 
   res.json({ id: req.params.id, amount_paid: newPaid, status });

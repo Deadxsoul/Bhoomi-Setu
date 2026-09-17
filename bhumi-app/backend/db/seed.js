@@ -5,6 +5,7 @@
 // has real data to show immediately after setup.
 
 const db = require('./init');
+const { logEvent } = require('./history');
 
 const demoUsers = [
   { name: 'Central Ministry',       phone: '9000000001', role: 'central',  state: null,        district: null,     land_id: null,          aadhaar_verified: 0 },
@@ -13,6 +14,7 @@ const demoUsers = [
   { name: 'NHAI Project Agency',    phone: '9000000004', role: 'agency',   state: 'Rajasthan', district: 'Jaipur', land_id: null,          aadhaar_verified: 0 },
   { name: 'Ramesh Kumar',           phone: '9000000005', role: 'farmer',   state: 'Rajasthan', district: 'Jaipur', land_id: 'RJ-JPR-0001', aadhaar_verified: 1 },
   { name: 'Sunita Devi',            phone: '9000000006', role: 'farmer',   state: 'Rajasthan', district: 'Jaipur', land_id: 'RJ-JPR-0002', aadhaar_verified: 1 },
+  { name: 'Jaipur Police (Land Verification)', phone: '9000000007', role: 'police', state: 'Rajasthan', district: 'Jaipur', land_id: null, aadhaar_verified: 0 },
 ];
 
 const insertUser = db.prepare(`
@@ -146,6 +148,120 @@ if (alreadySeeded) {
     for (const r of rehabRows) {
       insertRehab.run({ ...r, priority_score: priorityScore(r.family_size, r.monthly_income, r.agriculture_dependency) });
     }
+
+    // ---- Land History Tracker: backfilled government timeline (dated events) ----
+    // Real dates for each stage a parcel has been through, so the Land History
+    // page has something to show the moment the app boots, not just after a
+    // judge clicks through the workflow live.
+    function seedGovHistory(parcelIndex, events) {
+      const landId = parcels[parcelIndex].parcel_code;
+      for (const [event_date, event_type, title, description, amount, status] of events) {
+        logEvent({
+          land_id: landId,
+          category: 'government',
+          event_type,
+          title,
+          description: description || null,
+          amount: amount || null,
+          status: status || 'done',
+          event_date,
+          related_parcel_id: parcelIds[parcelIndex],
+        });
+      }
+    }
+
+    seedGovHistory(0, [ // RJ-JPR-0001 — Ramesh Kumar — fully compensated & possessed
+      ['2025-06-02', 'proposal_stage', 'Proposal approved', 'NH-48 Widening Project cleared after district + state review'],
+      ['2025-06-10', 'parcel_status', 'Land identified for acquisition'],
+      ['2025-06-25', 'parcel_status', 'Acquisition notice issued'],
+      ['2025-07-05', 'compensation_assessed', 'Compensation assessed', null, 1980000],
+      ['2025-07-20', 'compensation_paid', 'Compensation paid in full', '₹19,80,000 paid (total paid so far: ₹19,80,000)', 1980000],
+      ['2025-11-10', 'possession_handover', 'Possession handed over to the government'],
+    ]);
+
+    seedGovHistory(1, [ // RJ-JPR-0002 — Sunita Devi — notified, partially paid, 2 disputes
+      ['2025-06-02', 'proposal_stage', 'Proposal approved', 'NH-48 Widening Project cleared after district + state review'],
+      ['2025-06-12', 'parcel_status', 'Land identified for acquisition'],
+      ['2025-06-28', 'parcel_status', 'Acquisition notice issued'],
+      ['2025-07-08', 'compensation_assessed', 'Compensation assessed', null, 1705000],
+      ['2025-08-01', 'compensation_partial_payment', 'Partial compensation payment received', '₹5,11,500 paid (total paid so far: ₹5,11,500)', 511500],
+    ]);
+
+    seedGovHistory(2, [ // GJ-VAD-0011 — Bharat Patel — possessed, family resettled
+      ['2025-01-15', 'proposal_stage', 'Proposal approved', 'Delhi-Mumbai Rail Corridor — central clearance granted'],
+      ['2025-02-01', 'parcel_status', 'Land identified for acquisition'],
+      ['2025-02-20', 'parcel_status', 'Acquisition notice issued'],
+      ['2025-03-10', 'compensation_assessed', 'Compensation assessed', null, 8320000],
+      ['2025-04-05', 'compensation_paid', 'Compensation paid in full', '₹83,20,000 paid (total paid so far: ₹83,20,000)', 8320000],
+      ['2025-08-01', 'possession_handover', 'Possession handed over to the government'],
+      ['2025-08-20', 'rehabilitation_registered', 'Registered for rehabilitation & resettlement', 'Family: Patel Family'],
+      ['2025-09-05', 'rehabilitation_resettled', 'Family resettled', 'Family: Patel Family'],
+    ]);
+
+    seedGovHistory(3, [ // GJ-VAD-0012 — Kiran Shah — possessed, family not yet resettled
+      ['2025-01-15', 'proposal_stage', 'Proposal approved', 'Delhi-Mumbai Rail Corridor — central clearance granted'],
+      ['2025-02-03', 'parcel_status', 'Land identified for acquisition'],
+      ['2025-02-22', 'parcel_status', 'Acquisition notice issued'],
+      ['2025-03-12', 'compensation_assessed', 'Compensation assessed', null, 8000000],
+      ['2025-04-18', 'compensation_paid', 'Compensation paid in full', '₹80,00,000 paid (total paid so far: ₹80,00,000)', 8000000],
+      ['2025-09-15', 'possession_handover', 'Possession handed over to the government'],
+      ['2025-09-28', 'rehabilitation_registered', 'Registered for rehabilitation & resettlement', 'Family: Shah Family'],
+    ]);
+
+    seedGovHistory(4, [ // RJ-BKN-0021 — Mohan Singh — still early, only identified
+      ['2025-08-01', 'proposal_stage', 'Under state review', 'Indira Gandhi Canal Extension — awaiting state water board sign-off'],
+      ['2025-08-20', 'parcel_status', 'Land identified for acquisition'],
+    ]);
+
+    seedGovHistory(5, [ // MH-PUN-0031 — Anil Deshmukh — acquired but left unused
+      ['2025-03-01', 'proposal_stage', 'Proposal submitted', 'Pune Industrial Corridor — initial submission, pending district review'],
+      ['2025-03-10', 'parcel_status', 'Land identified for acquisition'],
+      ['2025-09-01', 'parcel_status', 'Marked as unused acquired land'],
+    ]);
+
+    // ---- Land History Tracker: backfilled private buy/sell deals ----
+    // One completed sale and one rejected sale, against the same land IDs
+    // farmers already hold in the government process above, so switching
+    // between the two history sections for RJ-JPR-0001 / RJ-JPR-0002 shows
+    // something real in both.
+    const insertTransaction = db.prepare(`
+      INSERT INTO land_transactions
+        (land_id, survey_number, village, district, state, area_acres, agreed_price,
+         initiated_by, initiated_as,
+         seller_user_id, seller_name, seller_aadhaar, seller_contact,
+         buyer_user_id, buyer_name, buyer_aadhaar, buyer_contact,
+         status, approx_verification_days, verifying_officer_id, verification_notes,
+         submitted_at, verified_at)
+      VALUES
+        (@land_id, @survey_number, @village, @district, @state, @area_acres, @agreed_price,
+         @initiated_by, @initiated_as,
+         @seller_user_id, @seller_name, @seller_aadhaar, @seller_contact,
+         @buyer_user_id, @buyer_name, @buyer_aadhaar, @buyer_contact,
+         @status, @approx_verification_days, @verifying_officer_id, @verification_notes,
+         @submitted_at, @verified_at)
+    `);
+
+    insertTransaction.run({
+      land_id: 'RJ-JPR-0001', survey_number: '112/4', village: 'Sitapura', district: 'Jaipur', state: 'Rajasthan',
+      area_acres: 1.0, agreed_price: 950000,
+      initiated_by: idByPhone['9000000005'], initiated_as: 'seller',
+      seller_user_id: idByPhone['9000000005'], seller_name: 'Ramesh Kumar', seller_aadhaar: null, seller_contact: '9000000005',
+      buyer_user_id: null, buyer_name: 'Suresh Yadav', buyer_aadhaar: null, buyer_contact: '9812345670',
+      status: 'sold', approx_verification_days: 6, verifying_officer_id: idByPhone['9000000007'],
+      verification_notes: 'All documents verified. Approved.',
+      submitted_at: '2025-02-10 10:00:00', verified_at: '2025-02-18 15:30:00',
+    });
+
+    insertTransaction.run({
+      land_id: 'RJ-JPR-0002', survey_number: '98/2', village: 'Sanganer', district: 'Jaipur', state: 'Rajasthan',
+      area_acres: 0.5, agreed_price: 420000,
+      initiated_by: idByPhone['9000000006'], initiated_as: 'seller',
+      seller_user_id: idByPhone['9000000006'], seller_name: 'Sunita Devi', seller_aadhaar: null, seller_contact: '9000000006',
+      buyer_user_id: null, buyer_name: 'Vikram Singh', buyer_aadhaar: null, buyer_contact: '9823456781',
+      status: 'rejected', approx_verification_days: 5, verifying_officer_id: idByPhone['9000000007'],
+      verification_notes: "Encumbrance certificate did not match the seller's name on record.",
+      submitted_at: '2025-04-05 09:15:00', verified_at: '2025-04-12 11:00:00',
+    });
 
     // ---- State ranking seed (recomputed live too, but useful initial cache) ----
     insertStateStats.run({ state: 'Rajasthan', speed_score: 72, transparency_score: 80, satisfaction_score: 65, total_score: 72.3 });

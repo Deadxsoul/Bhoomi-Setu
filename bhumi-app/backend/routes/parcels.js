@@ -3,8 +3,17 @@
 const express = require('express');
 const db = require('../db/init');
 const { authenticate, authorize } = require('../middleware/auth');
+const { logEvent } = require('../db/history');
 
 const router = express.Router();
+
+const STATUS_LABELS = {
+  identified: 'Land identified for acquisition',
+  notified: 'Acquisition notice issued',
+  compensated: 'Compensation completed',
+  possessed: 'Possession taken by government',
+  unused: 'Marked as unused acquired land',
+};
 
 function riskBadge(disputeCount) {
   if (disputeCount === 0) return 'green';
@@ -60,6 +69,19 @@ router.patch('/:id/status', authenticate, authorize('district', 'agency', 'state
   const allowed = ['identified', 'notified', 'compensated', 'possessed', 'unused'];
   if (!allowed.includes(status)) return res.status(400).json({ error: 'Invalid status' });
   db.prepare('UPDATE land_parcels SET status = ? WHERE id = ?').run(status, req.params.id);
+
+  const parcel = db.prepare('SELECT parcel_code FROM land_parcels WHERE id = ?').get(req.params.id);
+  if (parcel) {
+    logEvent({
+      land_id: parcel.parcel_code,
+      category: 'government',
+      event_type: 'parcel_status',
+      title: STATUS_LABELS[status] || `Status updated: ${status}`,
+      related_parcel_id: req.params.id,
+      created_by: req.user.id,
+    });
+  }
+
   res.json({ id: req.params.id, status });
 });
 
