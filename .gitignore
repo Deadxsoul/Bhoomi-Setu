@@ -4,3 +4,7 @@ node_modules
 bhumi.sqlite
 .DS_Store
 *.zip
+
+*.sqlite-shm
+*.sqlite-wal
+*.sqlite-journal
