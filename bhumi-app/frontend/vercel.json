@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://bhoomi-setu-3awe.onrender.com/api/:path*" },
+    { "source": "/(.*)", "destination": "/" }
+  ]
+}
