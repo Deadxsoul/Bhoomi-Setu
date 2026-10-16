@@ -47,7 +47,7 @@ export default function Documents() {
 
       <div className="card">
         <h2 className="font-semibold mb-3">All Documents</h2>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-left text-gray-500 border-b">
               <th className="py-2">Filename</th>
@@ -68,7 +68,7 @@ export default function Documents() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </FeatureLayer>
   );

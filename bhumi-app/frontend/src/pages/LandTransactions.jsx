@@ -91,7 +91,7 @@ export default function LandTransactions() {
             ) : deals.length === 0 ? (
               <p className="text-sm text-ink-soft">You haven't submitted or been named in a land sale yet.</p>
             ) : (
-              <table className="w-full text-sm">
+              <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
                 <thead>
                   <tr className="text-left text-gray-500 border-b">
                     <th className="py-2">Land ID</th>
@@ -114,7 +114,7 @@ export default function LandTransactions() {
                     </tr>
                   ))}
                 </tbody>
-              </table>
+              </table></div>
             )}
           </div>
         </>

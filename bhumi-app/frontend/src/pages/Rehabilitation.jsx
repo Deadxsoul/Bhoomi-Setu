@@ -45,7 +45,7 @@ export default function Rehabilitation() {
 
       <div className="card">
         <h2 className="font-semibold mb-3">Priority List (highest need first)</h2>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-left text-gray-500 border-b">
               <th className="py-2">Family</th>
@@ -74,7 +74,7 @@ export default function Rehabilitation() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </FeatureLayer>
   );

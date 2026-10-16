@@ -39,9 +39,9 @@ export default function Home() {
   const displayName = user?.name || (isGuest ? t('dashboard.guest') : '');
 
   return (
-    <div ref={scrollRef} className="h-[calc(100vh-64px)] overflow-y-auto overflow-x-hidden relative">
+    <div ref={scrollRef} className="h-[calc(100dvh-64px)] overflow-y-auto overflow-x-hidden relative">
       {/* ---------- Parallax hero ---------- */}
-      <div className="relative h-[calc(100vh-64px)] overflow-hidden">
+      <div className="relative h-[calc(100dvh-64px)] overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: `url(${SKY_LAYER})`, transform: `translateY(${offset * 0.15}px)`, filter: 'saturate(0.85) brightness(0.75)' }}
@@ -114,7 +114,7 @@ export default function Home() {
         </div>
 
         {stats && (
-          <div className="max-w-4xl mx-auto grid grid-cols-3 gap-4 mt-8">
+          <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
             <StatCard label={t('home.statParcels')} value={stats.totalParcels ?? '—'} />
             <StatCard label={t('home.statProjects')} value={stats.totalProjects ?? '—'} />
             <StatCard label={t('home.statCompensation')} value={stats.paidCompensation ? `₹${Number(stats.paidCompensation).toLocaleString('en-IN')}` : '—'} />

@@ -24,7 +24,7 @@ export default function Possession() {
   return (
     <FeatureLayer id="possession" title="Possession" subtitle="Track which parcels have physically been handed over.">
       <div className="card">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-left text-gray-500 border-b">
               <th className="py-2">Parcel</th>
@@ -58,7 +58,7 @@ export default function Possession() {
               </tr>
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </FeatureLayer>
   );

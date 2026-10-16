@@ -80,11 +80,13 @@ export default function Navbar() {
               onClick={() => setMenuOpen((v) => !v)}
               aria-label="Open menu"
               aria-expanded={menuOpen}
-              className="w-9 h-9 flex flex-col items-center justify-center gap-[3px] rounded-md hover:bg-sage-3 transition"
+              className="w-9 h-9 flex items-center justify-center rounded-md hover:bg-sage-3 transition"
             >
-              <span className="block w-5 h-0.5 bg-paper rounded" />
-              <span className="block w-5 h-0.5 bg-paper rounded" />
-              <span className="block w-5 h-0.5 bg-paper rounded" />
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M4 6H20" stroke="#FBF9F3" strokeWidth="2" strokeLinecap="round" />
+                <path d="M4 12H20" stroke="#FBF9F3" strokeWidth="2" strokeLinecap="round" />
+                <path d="M4 18H20" stroke="#FBF9F3" strokeWidth="2" strokeLinecap="round" />
+              </svg>
             </button>
 
             {menuOpen && (

@@ -164,7 +164,7 @@ export default function Dashboard() {
       <Section>
         <div className="bg-paper rounded-2xl p-5 border border-stone shadow-[0_1px_0_#DAD3C1,0_10px_24px_-14px_rgba(59,70,48,0.35)]">
           <h2 className="font-display font-semibold text-ink mb-3">Project-wise Progress</h2>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="text-left text-ink-soft border-b border-stone">
                 <th className="py-2 font-medium">Project</th>
@@ -187,7 +187,7 @@ export default function Dashboard() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         </div>
       </Section>
     </div>

@@ -36,7 +36,7 @@ export default function LandTransactionQueue() {
         ) : rows.length === 0 ? (
           <p className="text-sm text-ink-soft">Nothing pending — the queue is clear.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="text-left text-gray-500 border-b">
                 <th className="py-2">Land ID</th>
@@ -61,7 +61,7 @@ export default function LandTransactionQueue() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
     </FeatureLayer>

@@ -58,7 +58,7 @@ export default function Compensation() {
 
       <div className="card">
         <h2 className="font-semibold mb-3">All Compensation Records</h2>
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
           <thead>
             <tr className="text-left text-gray-500 border-b">
               <th className="py-2">Parcel</th>
@@ -74,7 +74,7 @@ export default function Compensation() {
               <PaymentRow key={r.id} r={r} onPay={recordPayment} />
             ))}
           </tbody>
-        </table>
+        </table></div>
       </div>
     </FeatureLayer>
   );

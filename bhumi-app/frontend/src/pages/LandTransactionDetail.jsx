@@ -109,7 +109,7 @@ export default function LandTransactionDetail() {
         {deal.documents.length === 0 ? (
           <p className="text-sm text-ink-soft">No documents on file.</p>
         ) : (
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto -mx-1 px-1"><table className="w-full text-sm min-w-[600px]">
             <thead>
               <tr className="text-left text-gray-500 border-b">
                 <th className="py-2">Document</th>
@@ -126,7 +126,7 @@ export default function LandTransactionDetail() {
                 </tr>
               ))}
             </tbody>
-          </table>
+          </table></div>
         )}
       </div>
 
